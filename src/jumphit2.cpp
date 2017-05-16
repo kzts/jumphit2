@@ -28,7 +28,8 @@ using namespace std;
 #define N_Sphere 1
 #define N_Cylinder 2
 
-#define NUM_l 9  // link number
+//#define NUM_l 9  // link number
+#define NUM_l 11  // link number (double arm)
 #define NUM_p 27 // parameter number
 #define NUM_c 2  // chambers number in one cylinder
 #define NUM_t 10000
@@ -115,7 +116,7 @@ double dataPressure[NUM_t][NUM_l][NUM_c];
 
 dReal radius = 0.02;
 //dReal height = 0.5;
-dReal height = 0.0;
+//dReal height = 0.0;
 
 double Value_valves_phase[NUM_OF_PHASE][NUM_l + NUM_l] = {};
 double Time_phase[NUM_OF_PHASE] = {};
@@ -141,13 +142,16 @@ void loadCommand(void){
   fgets( str, MAX_str, fp_cmd);
   for (int i = 0; i < NUM_OF_PHASE; i++){
     fgets( str, MAX_str, fp_cmd);
-    sscanf( str, "%s %s  %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s", 
+    //sscanf( str, "%s %s  %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s", 
+    sscanf( str, "%s %s  %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s  %s %s %s %s", 
 	    s[0], s[1], s[ 2], s[ 3],  
 	    s[ 4], s[ 5], s[ 6], s[ 7],  s[ 8], s[ 9], s[10], s[11], 
-	    s[12], s[13], s[14], s[15],  s[16], s[17], s[18], s[19]);
+	    s[12], s[13], s[14], s[15],  s[16], s[17], s[18], s[19], 
+	    s[20], s[21], s[22], s[23] );
+	    //s[12], s[13], s[14], s[15],  s[16], s[17], s[18], s[19]);
     phase_time[i] = atof( s[1]);
     for (int j = 0; j < (NUM_l + NUM_l); j++)
-      Value_valves_phase[i][j] = atof( s[j+2]);
+      Value_valves_phase[i][j] = atof( s[j+2] );
   }
   
   for (int i = 0; i < NUM_OF_PHASE; i++){
@@ -314,32 +318,38 @@ void loadRobot(void)
     // out to terminal 
     if (VIEW > 0)    
       for (int i = 0; i < NUM_l; i++) {
-	cout << "#" << uLINK[i].num_link << ", mother: " << uLINK[i].num_mother 
-	     << ", #shape: " << uLINK[i].num_shape << endl;
-	cout << "joint position:( " 
-	     << uLINK[i].p_j[0] << ", "<< uLINK[i].p_j[1] << ", "<< uLINK[i].p_j[2] << ")" << endl;
-	cout << "CoM position:( " 
-	     << uLINK[i].p_c[0] << ", "<< uLINK[i].p_c[1] << ", "<< uLINK[i].p_c[2] << ")" << endl;
-	cout << "Axis vector:( " 
-	     << uLINK[i].a[0] << ", "<< uLINK[i].a[1] << ", "<< uLINK[i].a[2] << ")" << endl;
-	cout << "R: " << endl;
-	cout << "(" << uLINK[i].R[0][0] << ", " << uLINK[i].R[0][1] << ", "<< uLINK[i].R[0][2] << ")" << endl;   
-	cout << "(" << uLINK[i].R[1][0] << ", " << uLINK[i].R[1][1] << ", "<< uLINK[i].R[1][2] << ")" << endl;   
-	cout << "(" << uLINK[i].R[2][0] << ", " << uLINK[i].R[2][1] << ", "<< uLINK[i].R[2][2] << ")" << endl;
+	cout << "#"                << uLINK[i].num_link << endl;
+	cout << "mother:\t"         << uLINK[i].num_mother << endl;
+	cout << "shape:\t"          << uLINK[i].num_shape << endl;
+        cout << "weight:\t"         << uLINK[i].m << endl;
+	cout << "Axis vector:\t"    << uLINK[i].a[0] << ", "<< uLINK[i].a[1] << ", "<< uLINK[i].a[2] << endl;
+	cout << "Size vector:\t"    << uLINK[i].l[0] << ", "<< uLINK[i].l[1] << ", "<< uLINK[i].l[2] << endl;
+	cout << "joint position:\t" << uLINK[i].p_j[0] << ", "<< uLINK[i].p_j[1] << ", "<< uLINK[i].p_j[2] << endl;
+	cout << "CoM position:\t"   << uLINK[i].p_c[0] << ", "<< uLINK[i].p_c[1] << ", "<< uLINK[i].p_c[2] << endl;
+	cout << "R: " << endl
+	     << "(" << uLINK[i].R[0][0] << ", " << uLINK[i].R[0][1] << ", "<< uLINK[i].R[0][2] << ")" << endl  
+	     << "(" << uLINK[i].R[1][0] << ", " << uLINK[i].R[1][1] << ", "<< uLINK[i].R[1][2] << ")" << endl
+	     << "(" << uLINK[i].R[2][0] << ", " << uLINK[i].R[2][1] << ", "<< uLINK[i].R[2][2] << ")" << endl;
+	cout << "RoM:\t" << uLINK[i].RoM[0] << ", "<< uLINK[i].RoM[1] << endl;
 	cout << endl;
       }
     
     // set diameter
     for (int i = 0; i < NUM_l; i++)    
       uLINK[i].D = 40e-3;
-    uLINK[7].D = 32e-3;
-    uLINK[8].D = 25e-3;
+    uLINK[ 7].D = 32e-3;
+    uLINK[ 8].D = 25e-3;
+    uLINK[ 9].D = 32e-3;
+    uLINK[10].D = 25e-3;
     
     // set moment arm
-    for (int i = 0; i < NUM_l; i++)    
-      uLINK[i].L_MA = 50e-3;
-    uLINK[7].L_MA = 20e-3;
-    uLINK[8].L_MA = 20e-3;
+    for (int i = 0; i < NUM_l; i++)
+      uLINK[i].L_MA = 40e-3;    
+      //uLINK[i].L_MA = 50e-3;
+    uLINK[ 7].L_MA = 20e-3;
+    uLINK[ 8].L_MA = 20e-3;
+    uLINK[ 9].L_MA = 20e-3;
+    uLINK[10].L_MA = 20e-3;
     
     // set piston stroke
     for (int i = 0; i < NUM_l; i++)    
@@ -368,7 +378,8 @@ void  setRobot() // make the robot
     rlink[i].body  = dBodyCreate( world);
 
     // position, posture
-    dBodySetPosition( rlink[i].body, uLINK[i].p_c[0], uLINK[i].p_c[1], uLINK[i].p_c[2] + height);
+    //dBodySetPosition( rlink[i].body, uLINK[i].p_c[0], uLINK[i].p_c[1], uLINK[i].p_c[2] + height);
+    dBodySetPosition( rlink[i].body, uLINK[i].p_c[0], uLINK[i].p_c[1], uLINK[i].p_c[2] );
 
     for (int n = 0; n < XYZ; n++) 
       for (int m = 0; m < XYZ; m++) 
@@ -409,8 +420,8 @@ void  setRobot() // make the robot
     joint[j] = dJointCreateHinge( world, 0); // hinge
     
     dJointAttach( joint[j], rlink[j].body, rlink[m].body);
-    //dJointSetHingeAnchor( joint[j], uLINK[j].p_j[0], uLINK[j].p_j[1], uLINK[j].p_j[2]);
-    dJointSetHingeAnchor( joint[j], uLINK[j].p_j[0], uLINK[j].p_j[1], uLINK[j].p_j[2] + height);
+    dJointSetHingeAnchor( joint[j], uLINK[j].p_j[0], uLINK[j].p_j[1], uLINK[j].p_j[2]);
+    //dJointSetHingeAnchor( joint[j], uLINK[j].p_j[0], uLINK[j].p_j[1], uLINK[j].p_j[2] + height);
     dJointSetHingeAxis( joint[j], uLINK[j].a[0], uLINK[j].a[1], uLINK[j].a[2]);
     dJointSetHingeParam( joint[j], dParamLoStop, uLINK[j].RoM[0]);
     dJointSetHingeParam( joint[j], dParamHiStop, uLINK[j].RoM[1]);
@@ -421,11 +432,11 @@ void drawRobot() // draw the robot
 {
   for (int i = 0; i < NUM_l; i++ ) // draw capsule
     if ( uLINK[i].num_shape == N_Box)
-      dsDrawBox( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), uLINK[i].l);
+      dsDrawBox( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), uLINK[i].l );
     else if ( uLINK[i].num_shape == N_Sphere)
-      dsDrawSphere( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), radius);
+      dsDrawSphere( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), radius );
     else
-      dsDrawCapsule( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), uLINK[i].l[2], radius);
+      dsDrawCapsule( dBodyGetPosition( rlink[i].body), dBodyGetRotation(rlink[i].body), uLINK[i].l[2], radius );
 }
 
 
@@ -447,7 +458,8 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) // collison detecti
       contact[i].surface.mode   = dContactBounce | dContactSoftERP |
                                   dContactSoftCFM;
       contact[i].surface.soft_erp   = 1e-3;   // ERP of contact point (good reproductibity)
-      contact[i].surface.soft_cfm   = 1e-3; // CFM of contact point
+      //contact[i].surface.soft_cfm   = 1e-3; // CFM of contact point
+      contact[i].surface.soft_cfm   = 1e-4; // CFM of contact point
       
       contact[i].surface.mu     = dInfinity; // friction coefficient: infinity
       dJointID c = dJointCreateContact(world,
@@ -562,7 +574,8 @@ void setDrawStuff()        // setup of draw functions
   fn.version = DS_VERSION; // version of draw stuff
   fn.start   = &start;     // preprocess: pointer of start function 
   fn.step    = &simLoop;   // pointer of function simLoop
-  fn.path_to_textures = "../../drawstuff/textures"; // texture path
+  //fn.path_to_textures = "../../drawstuff/textures"; // texture path
+  fn.path_to_textures = "../../../drawstuff/textures"; // texture path
 }
 
 void saveData(int num_t_){
@@ -618,7 +631,8 @@ int main (int argc, char *argv[])
   //dWorldSetCFM( world, 1e-4 );               // set CFM ( original )
 
   dWorldSetERP( world, 1e-3 );               // set ERP
-  dWorldSetCFM( world, 1e-3 );               // set CFM
+  //dWorldSetCFM( world, 1e-3 );               // set CFM
+  dWorldSetCFM( world, 1e-4 );               // set CFM
 
   ground = dCreatePlane(space, 0, 0, 1, 0); // set ground
   
