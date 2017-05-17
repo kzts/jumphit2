@@ -38,8 +38,7 @@ using namespace std;
 #define XYZ 3
 #define PI 3.14159
 
-//#define TIMESTEP 1e-4
-#define TIMESTEP 5e-5
+#define TIMESTEP 1e-4
 #define S_TO_MS 1e+3
 
 #define k_air 1.4
@@ -457,8 +456,8 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) // collison detecti
     for (int i = 0; i < n; i++) {
       contact[i].surface.mode   = dContactBounce | dContactSoftERP |
                                   dContactSoftCFM;
-      contact[i].surface.soft_erp   = 1e-3;   // ERP of contact point (good reproductibity)
-      //contact[i].surface.soft_erp   = 1e-2;   // ERP of contact point
+      //contact[i].surface.soft_erp   = 1e-3;   // ERP of contact point (good reproductibity)
+      contact[i].surface.soft_erp   = 1e-2;   // ERP of contact point
       contact[i].surface.soft_cfm   = 1e-4; // CFM of contact point
       
       contact[i].surface.mu     = dInfinity; // friction coefficient: infinity
@@ -630,7 +629,8 @@ int main (int argc, char *argv[])
   //dWorldSetERP( world, 0.9);                // set ERP ( original )
   //dWorldSetCFM( world, 1e-4 );               // set CFM ( original )
 
-  dWorldSetERP( world, 1e-3 );               // set ERP
+  //dWorldSetERP( world, 1e-3 );               // set ERP
+  dWorldSetERP( world, 1e-2 );               // set ERP
   dWorldSetCFM( world, 1e-4 );               // set CFM
 
   ground = dCreatePlane( space, 0, 0, 1, 0 ); // set ground
